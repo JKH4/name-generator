@@ -1,0 +1,72 @@
+training_infos:
+{
+    "total_epochs": 105,
+    "trainset_infos": {
+        "number_of_chars": 54,
+        "length_of_sequence": 5,
+        "padding_end": "*",
+        "target_group": "Real",
+        "m": 60211,
+        "padding_start": "#"
+    },
+    "acc": 0.6876484363312417,
+    "loss": 0.9290395355931815
+}
+history["hyperparams"]:
+[
+    [
+        0,
+        {
+            "batch_size": 32,
+            "lr": 0.03,
+            "loss": "categorical_crossentropy"
+        }
+    ],
+    [
+        50,
+        {
+            "batch_size": 32,
+            "lr": 0.01,
+            "loss": "categorical_crossentropy"
+        }
+    ],
+    [
+        85,
+        {
+            "batch_size": 32,
+            "lr": 0.003,
+            "loss": "categorical_crossentropy"
+        }
+    ],
+    [
+        95,
+        {
+            "batch_size": 32,
+            "lr": 0.001,
+            "loss": "categorical_crossentropy"
+        }
+    ],
+    [
+        100,
+        {
+            "batch_size": 32,
+            "lr": 0.0003,
+            "loss": "categorical_crossentropy"
+        }
+    ]
+]
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+input_11 (InputLayer)        (None, 5, 54)             0         
+_________________________________________________________________
+lstm_11 (LSTM)               (None, 64)                30464     
+_________________________________________________________________
+dense_11 (Dense)             (None, 54)                3510      
+_________________________________________________________________
+activation_11 (Activation)   (None, 54)                0         
+=================================================================
+Total params: 33,974
+Trainable params: 33,974
+Non-trainable params: 0
+_________________________________________________________________
