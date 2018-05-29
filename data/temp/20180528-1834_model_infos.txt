@@ -1,0 +1,86 @@
+training_infos:
+{
+    "total_epochs": 79,
+    "loss": 0.8581106751784503,
+    "acc": 0.7047217285912644,
+    "trainset_infos": {
+        "target_race": "real",
+        "length_of_sequence": 5,
+        "number_of_chars": 54,
+        "m": 60211
+    }
+}
+history["hyperparams"]:
+[
+    [
+        0,
+        {
+            "lr": 0.0003,
+            "loss": "categorical_crossentropy",
+            "batch_size": 32
+        }
+    ],
+    [
+        50,
+        {
+            "lr": 0.0001,
+            "loss": "categorical_crossentropy",
+            "batch_size": 32
+        }
+    ],
+    [
+        60,
+        {
+            "lr": 0.0003,
+            "loss": "categorical_crossentropy",
+            "batch_size": 32
+        }
+    ],
+    [
+        60,
+        {
+            "lr": 3e-05,
+            "loss": "categorical_crossentropy",
+            "batch_size": 32
+        }
+    ],
+    [
+        70,
+        {
+            "lr": 1e-05,
+            "loss": "categorical_crossentropy",
+            "batch_size": 32
+        }
+    ],
+    [
+        73,
+        {
+            "lr": 1e-06,
+            "loss": "categorical_crossentropy",
+            "batch_size": 32
+        }
+    ],
+    [
+        76,
+        {
+            "lr": 1e-07,
+            "loss": "categorical_crossentropy",
+            "batch_size": 32
+        }
+    ]
+]
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+input_3 (InputLayer)         (None, 5, 63)             0         
+_________________________________________________________________
+lstm_3 (LSTM)                (None, 256)               327680    
+_________________________________________________________________
+dense_3 (Dense)              (None, 63)                16191     
+_________________________________________________________________
+activation_3 (Activation)    (None, 63)                0         
+=================================================================
+Total params: 343,871
+Trainable params: 343,871
+Non-trainable params: 0
+_________________________________________________________________
