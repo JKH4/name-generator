@@ -1,9 +1,6 @@
 
 # coding: utf-8
 
-# In[71]:
-
-
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -28,9 +25,6 @@ get_ipython().run_line_magic('matplotlib', 'inline')
 
 
 # # LOAD and VISUALIZE INPUTS
-
-# In[7]:
-
 
 def load_data(csv_file_path, verbose = True):
     '''
@@ -59,16 +53,10 @@ def load_data(csv_file_path, verbose = True):
     return data
 
 
-# In[8]:
-
-
 # Load data
 
 lotr       = load_data('../data/inputs/characters_data.csv')
 firstnames = load_data('../data/inputs/first_names.csv')
-
-
-# In[9]:
 
 
 # Visualize LOTR data
@@ -86,9 +74,6 @@ lotr_chars_count[-10:].plot(kind="bar")
 
 
 # # CLEAN DATA
-
-# In[10]:
-
 
 def clean_lotr_data(data, padding_start = '#', padding_end = '*', verbose=True):
     '''
@@ -121,9 +106,6 @@ def clean_lotr_data(data, padding_start = '#', padding_end = '*', verbose=True):
     print('{} rows cleaned !'.format(len(data_cleaned))) if verbose else None
     
     return data_cleaned
-
-
-# In[11]:
 
 
 def clean_firstnames_data(data, padding_start = '#', padding_end = '*', verbose=True):
@@ -159,9 +141,6 @@ def clean_firstnames_data(data, padding_start = '#', padding_end = '*', verbose=
     return data_cleaned
 
 
-# In[12]:
-
-
 # Clean data
 
 # Padding characters is used to ease the training data generation
@@ -179,9 +158,6 @@ clean_data = pd.concat([lotr_cleaned, firstnames_cleaned])
 
 display(clean_data.describe())
 clean_data.groupby('group').count().plot.bar()
-
-
-# In[13]:
 
 
 # Visualization of data cleaning
@@ -205,9 +181,6 @@ print('--\n')
 
 
 # # TRANSFORM DATA
-
-# In[14]:
-
 
 def build_inputs(data_cleaned, verbose=True):
     '''
@@ -250,18 +223,12 @@ def build_inputs(data_cleaned, verbose=True):
     return data_dict
 
 
-# In[15]:
-
-
 # Build model input data
 
 # Create a data dictionnary
 data_dict = build_inputs(clean_data)
 # lotr_data_dict = build_lotr_inputs(lotr_cleaned)
 # firstnames_data_dict = build_lotr_inputs(firstnames_cleaned)
-
-
-# In[16]:
 
 
 def init_training_data(
@@ -377,9 +344,6 @@ def init_training_data(
     return X, Y, {'c2i': c2i, 'i2c': i2c}, trainset_infos
 
 
-# In[339]:
-
-
 X, Y, trainset_utils, trainset_infos = init_training_data(
     target_group = 'Real',
     data_dict = data_dict,
@@ -388,9 +352,6 @@ X, Y, trainset_utils, trainset_infos = init_training_data(
 
 
 # # CREATE MODEL
-
-# In[430]:
-
 
 def create_model(trainset_infos, lstm_units = 256, verbose = True):
     '''
@@ -448,16 +409,10 @@ def create_model(trainset_infos, lstm_units = 256, verbose = True):
     return model, training_infos, history
 
 
-# In[431]:
-
-
 current_model, training_infos, history = create_model(trainset_infos = trainset_infos, lstm_units= 64)
 
 
 # # TRAIN MODEL
-
-# In[52]:
-
 
 def compile_model(model, hyperparams, history, verbose=True):
     '''
@@ -484,9 +439,6 @@ def compile_model(model, hyperparams, history, verbose=True):
     return None
 
 
-# In[432]:
-
-
 compile_model(
     model = current_model,
     hyperparams = {
@@ -496,9 +448,6 @@ compile_model(
     },
     history = history
 )
-
-
-# In[54]:
 
 
 def train_model(model, X, Y, training_infos, history, epochs_to_add = 10, verbose = True):
@@ -557,13 +506,7 @@ def train_model(model, X, Y, training_infos, history, epochs_to_add = 10, verbos
     return None
 
 
-# In[372]:
-
-
 train_model(current_model, X, Y, training_infos, history, epochs_to_add = 5, verbose = True)
-
-
-# In[57]:
 
 
 def generate_name(
@@ -670,9 +613,6 @@ def generate_name(
     return generated_name, {'probability': probability, 'gap': gap}
 
 
-# In[346]:
-
-
 def plot_training_session(training_infos, history, last_n = 30, verbose=True):
     '''
     Plot some graphs about history
@@ -709,9 +649,6 @@ def plot_training_session(training_infos, history, last_n = 30, verbose=True):
     return None
 
 
-# In[373]:
-
-
 # Plot loss history
 plot_training_session(training_infos, history, last_n = 20)
 
@@ -732,9 +669,6 @@ print('current samples: {}'.format(samples))
 
 # # PLAY with MODEL
 
-# In[404]:
-
-
 new_name = generate_name(
     model=current_model,
     trainset_infos=trainset_infos,
@@ -744,9 +678,6 @@ new_name = generate_name(
 
 
 # # BACKUP et RESTORE
-
-# In[429]:
-
 
 def backup_model_to_disk(
     model,
@@ -832,9 +763,6 @@ def backup_model_to_disk(
     return (saved_files)
 
 
-# In[427]:
-
-
 # Model Backup
 backup_model_to_disk(
     model = current_model,
@@ -845,9 +773,6 @@ backup_model_to_disk(
         'history': history
     }
 )
-
-
-# In[422]:
 
 
 def load_model_from_disk(date='AAAAMMDD-HHMM', directory='../data/temp/'):
@@ -920,9 +845,6 @@ def load_model_from_disk(date='AAAAMMDD-HHMM', directory='../data/temp/'):
     ))
     
     return (loaded_model, loaded_files)
-
-
-# In[428]:
 
 
 # Model restore
