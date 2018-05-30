@@ -19,10 +19,10 @@ from tensorflow.python.keras.models import Model, Sequential, model_from_json
 from tensorflow.python.keras.utils import to_categorical
 from tensorflow.python.keras.optimizers import Adam
 
-print('numpy v{}'.format(np.__version__))
-print('pandas v{}'.format(pd.__version__))
-print('tensorflow v{}'.format(tf.__version__))
-print('matplotlib v{}'.format(matplotlib.__version__))
+print('numpy v{}'.format(np.__version__))                 # v1.14.3
+print('pandas v{}'.format(pd.__version__))                # v0.23.0
+print('tensorflow v{}'.format(tf.__version__))            # v1.8.0
+print('matplotlib v{}'.format(matplotlib.__version__))    # v2.2.2
 
 get_ipython().run_line_magic('matplotlib', 'inline')
 
