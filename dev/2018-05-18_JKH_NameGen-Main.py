@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[717]:
+# In[71]:
 
 
 import numpy as np
@@ -10,6 +10,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import json
 import datetime
+import h5py
+import pickle
 
 import tensorflow as tf
 from tensorflow.python.keras.layers import Activation, Input, SimpleRNN, Dense, LSTM
@@ -27,7 +29,7 @@ get_ipython().run_line_magic('matplotlib', 'inline')
 
 # # LOAD and VISUALIZE INPUTS
 
-# In[598]:
+# In[7]:
 
 
 def load_data(csv_file_path, verbose = True):
@@ -57,7 +59,7 @@ def load_data(csv_file_path, verbose = True):
     return data
 
 
-# In[599]:
+# In[8]:
 
 
 # Load data
@@ -66,7 +68,7 @@ lotr       = load_data('../data/inputs/characters_data.csv')
 firstnames = load_data('../data/inputs/first_names.csv')
 
 
-# In[600]:
+# In[9]:
 
 
 # Visualize LOTR data
@@ -85,7 +87,7 @@ lotr_chars_count[-10:].plot(kind="bar")
 
 # # CLEAN DATA
 
-# In[603]:
+# In[10]:
 
 
 def clean_lotr_data(data, padding_start = '#', padding_end = '*', verbose=True):
@@ -121,7 +123,7 @@ def clean_lotr_data(data, padding_start = '#', padding_end = '*', verbose=True):
     return data_cleaned
 
 
-# In[614]:
+# In[11]:
 
 
 def clean_firstnames_data(data, padding_start = '#', padding_end = '*', verbose=True):
@@ -157,7 +159,7 @@ def clean_firstnames_data(data, padding_start = '#', padding_end = '*', verbose=
     return data_cleaned
 
 
-# In[623]:
+# In[12]:
 
 
 # Clean data
@@ -179,7 +181,7 @@ display(clean_data.describe())
 clean_data.groupby('group').count().plot.bar()
 
 
-# In[624]:
+# In[13]:
 
 
 # Visualization of data cleaning
@@ -204,7 +206,7 @@ print('--\n')
 
 # # TRANSFORM DATA
 
-# In[625]:
+# In[14]:
 
 
 def build_inputs(data_cleaned, verbose=True):
@@ -248,7 +250,7 @@ def build_inputs(data_cleaned, verbose=True):
     return data_dict
 
 
-# In[626]:
+# In[15]:
 
 
 # Build model input data
@@ -259,7 +261,7 @@ data_dict = build_inputs(clean_data)
 # firstnames_data_dict = build_lotr_inputs(firstnames_cleaned)
 
 
-# In[662]:
+# In[16]:
 
 
 def init_training_data(
@@ -375,7 +377,7 @@ def init_training_data(
     return X, Y, {'c2i': c2i, 'i2c': i2c}, trainset_infos
 
 
-# In[663]:
+# In[339]:
 
 
 X, Y, trainset_utils, trainset_infos = init_training_data(
@@ -387,10 +389,10 @@ X, Y, trainset_utils, trainset_infos = init_training_data(
 
 # # CREATE MODEL
 
-# In[641]:
+# In[430]:
 
 
-def create_model(trainset_infos, verbose = True):
+def create_model(trainset_infos, lstm_units = 256, verbose = True):
     '''
     Create the Keras RNN model and some helpers
     
@@ -419,14 +421,13 @@ def create_model(trainset_infos, verbose = True):
         - hyperparams (list): Infos regarding hyperparams
             format: (epoch, hyperparams_dict)
     '''
-    m = trainset_infos['m']
     length_of_sequence = trainset_infos['length_of_sequence']
     number_of_chars = trainset_infos['number_of_chars']
     
     X_input = Input(shape=(length_of_sequence, number_of_chars))
     
     #X = SimpleRNN(units=number_of_chars)(X_input)
-    X = LSTM(units=256)(X_input)
+    X = LSTM(units=lstm_units)(X_input) # default 256
     X = Dense(units=number_of_chars)(X)
     
     Output = Activation('softmax')(X)
@@ -447,15 +448,15 @@ def create_model(trainset_infos, verbose = True):
     return model, training_infos, history
 
 
-# In[647]:
+# In[431]:
 
 
-current_model, training_infos, history = create_model(trainset_infos = trainset_infos)
+current_model, training_infos, history = create_model(trainset_infos = trainset_infos, lstm_units= 64)
 
 
 # # TRAIN MODEL
 
-# In[650]:
+# In[52]:
 
 
 def compile_model(model, hyperparams, history, verbose=True):
@@ -483,13 +484,13 @@ def compile_model(model, hyperparams, history, verbose=True):
     return None
 
 
-# In[653]:
+# In[432]:
 
 
 compile_model(
     model = current_model,
     hyperparams = {
-        'lr': 0.0003,                       # default 0.0003
+        'lr': 0.003,                       # default 0.003
         'loss': 'categorical_crossentropy', # default 'categorical_crossentropy'
         'batch_size': 32,                   # default 32
     },
@@ -497,7 +498,7 @@ compile_model(
 )
 
 
-# In[651]:
+# In[54]:
 
 
 def train_model(model, X, Y, training_infos, history, epochs_to_add = 10, verbose = True):
@@ -556,13 +557,13 @@ def train_model(model, X, Y, training_infos, history, epochs_to_add = 10, verbos
     return None
 
 
-# In[654]:
+# In[372]:
 
 
-train_model(current_model, X, Y, training_infos, history, epochs_to_add = 3, verbose = True)
+train_model(current_model, X, Y, training_infos, history, epochs_to_add = 5, verbose = True)
 
 
-# In[710]:
+# In[57]:
 
 
 def generate_name(
@@ -669,10 +670,10 @@ def generate_name(
     return generated_name, {'probability': probability, 'gap': gap}
 
 
-# In[715]:
+# In[346]:
 
 
-def plot_training_session(training_infos, history, verbose=True):
+def plot_training_session(training_infos, history, last_n = 30, verbose=True):
     '''
     Plot some graphs about history
     
@@ -695,7 +696,7 @@ def plot_training_session(training_infos, history, verbose=True):
     
     # Plot loss on last n epochs
     plt.figure()
-    last_n = min(10,len(history['loss']))
+    last_n = min(last_n,len(history['loss']))
     plt.plot(range(last_n), history['loss'][-last_n:])
     
     if verbose:
@@ -703,16 +704,16 @@ def plot_training_session(training_infos, history, verbose=True):
         print('training_infos: {}'.format(json.dumps(training_infos, indent=2)))
         
         # Print evolution of hyperparams
-        print('history: {}'.format(json.dumps(history['hyperparams'], indent=2)))
+        print('history: {}'.format(json.dumps(history['hyperparams'][-3:], indent=2)))
         
     return None
 
 
-# In[716]:
+# In[373]:
 
 
 # Plot loss history
-plot_training_session(training_infos, history)
+plot_training_session(training_infos, history, last_n = 20)
 
 # Print some sample of generated names
 samples = []
@@ -731,7 +732,7 @@ print('current samples: {}'.format(samples))
 
 # # PLAY with MODEL
 
-# In[714]:
+# In[404]:
 
 
 new_name = generate_name(
@@ -744,33 +745,66 @@ new_name = generate_name(
 
 # # BACKUP et RESTORE
 
-# In[306]:
+# In[429]:
 
 
-def backup_model_to_disk(model=current_model, directory='../data/temp/'):
+def backup_model_to_disk(
+    model,
+    dict_to_pkl,
+#     trainset_infos,
+#     trainset_utils,
+#     training_infos,
+#     history,
+    directory='../data/temp/'
+):
     '''
     Backup model to disk
     
     ## Inputs:
     model (Keras model): model to backup
+    trainset_infos (dict): Info of the training session
+        - total_epochs (integer): total number of epochs used to train the model
+        - loss (float): up to date loss of the model
+        - acc (float): up to date accuracy of the model
+    trainset_utils (dict): trainset_utils (dict): utils dictionnary used to convert character to index of "one hot vector" and vice versa
+        - c2i (dict): character to index
+        - i2c (dict): index to character
+    training_infos (dict): Info of the training session
+        - total_epochs (integer): total number of epochs used to train the model
+        - loss (float): up to date loss of the model
+        - acc (float): up to date accuracy of the model
+    history (dict): history of the training session
+        - loss (float array): list of loss by epoch
+        - acc (float array): list of accuracy by epoch
+        - hyperparams (list): Infos regarding hyperparams
+            format: (epoch, hyperparams_dict)
     directory (string): path to backup directory
     ## Outputs:
-    %Y%m%d-%H%M_model_infos.txt (txt file): 
-    %Y%m%d-%H%M_model.json (json file):
-    %Y%m%d-%H%M_model_weights.h5 (h5 file):
+    %Y%m%d-%H%M_Group_Loss_model_infos.txt (txt file)
+    %Y%m%d-%H%M_model.json (json file)
+    %Y%m%d-%H%M_model_weights.h5 (h5 file)
+    %Y%m%d-%H%M_trainset_infos.pkl (pkl file)
+    %Y%m%d-%H%M_trainset_utils.pkl (pkl file)
+    %Y%m%d-%H%M_training_infos.pkl (pkl file)
+    %Y%m%d-%H%M_history.pkl (pkl file)
     '''
     # File Naming format
     now = datetime.datetime.now()
     prefix = now.strftime("%Y%m%d-%H%M") + '_'
+    
+    # Init list of saved files
+    saved_files = []
 
     # Model summary to txt
-    model_infos_target = directory + prefix + "model_infos.txt"
-    with open(model_infos_target, "w") as text_file:
-        text_file.write('training_infos:\n')
-        text_file.write(json.dumps(training_infos, indent=4) + '\n')
-        text_file.write('history["hyperparams"]:\n')
-        text_file.write(json.dumps(history["hyperparams"], indent=4) + '\n')
-        model.summary(print_fn=lambda line: text_file.write(line + '\n'))
+    desc = '{}_{:.4f}_'.format(trainset_infos['target_group'], training_infos['loss'])
+    model_infos_target = directory + prefix + desc + "model_infos.txt"
+    with open(model_infos_target, "w") as f:
+        f.write('training_infos:\n')
+        f.write(json.dumps(training_infos, indent=2) + '\n')
+        f.write('history["hyperparams"]:\n')
+        f.write(json.dumps(history["hyperparams"], indent=2) + '\n')
+        model.summary(print_fn=lambda line: f.write(line + '\n'))
+    saved_files.append(model_infos_target)
     print("Saved model to disk {}".format(model_infos_target))
 
     # serialize model to JSON
@@ -778,23 +812,42 @@ def backup_model_to_disk(model=current_model, directory='../data/temp/'):
     model_json = model.to_json()
     with open(model_json_target, "w") as json_file:
         json_file.write(model_json)
+    saved_files.append(model_json_target)
     print("Saved model to disk {}".format(model_json_target))
 
     # serialize weights to HDF5
     model_weights_target = directory + prefix + "model_weights.h5"
     model.save_weights(model_weights_target)
+    saved_files.append(model_weights_target)
     print("Saved model to disk {}".format(model_weights_target))
-    return (model_infos_target, model_json_target, model_weights_target)
+    
+    # serialize trainset_infos to disk
+    for name, data in dict_to_pkl.items():
+        target = directory + prefix + name + '.pkl'
+        with open(target, "wb") as f:
+            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+        saved_files.append(target)
+        print("Saved model to disk {}".format(target))
+    
+    return (saved_files)
 
 
-# In[644]:
+# In[427]:
 
 
 # Model Backup
-backup_model_to_disk()
+backup_model_to_disk(
+    model = current_model,
+    dict_to_pkl = {
+        'trainset_infos': trainset_infos,
+        'trainset_utils': trainset_utils,
+        'training_infos': training_infos,
+        'history': history
+    }
+)
 
 
-# In[765]:
+# In[422]:
 
 
 def load_model_from_disk(date='AAAAMMDD-HHMM', directory='../data/temp/'):
@@ -805,37 +858,86 @@ def load_model_from_disk(date='AAAAMMDD-HHMM', directory='../data/temp/'):
     model (Keras model): model to backup
     directory (string): path to backup directory
     ## Outputs:
-    %Y%m%d-%H%M_model_infos.txt (txt file): 
-    %Y%m%d-%H%M_model.json (json file):
-    %Y%m%d-%H%M_model_weights.h5 (h5 file):
+    loaded_model (Keras model): restored model
+    loaded_trainset_infos (dict): Info of the training session of the restored model
+        - total_epochs (integer): total number of epochs used to train the model
+        - loss (float): up to date loss of the model
+        - acc (float): up to date accuracy of the model
+    loaded_trainset_utils (dict): trainset_utils (dict): utils dictionnary used to convert character to index of "one hot vector" and vice versa
+        - c2i (dict): character to index
+        - i2c (dict): index to character
+    loaded_training_infos (dict): Info of the training session of the restored model
+        - total_epochs (integer): total number of epochs used to train the model
+        - loss (float): up to date loss of the model
+        - acc (float): up to date accuracy of the model
+    loaded_history (dict): history of the training session of the restored model
+        - loss (float array): list of loss by epoch
+        - acc (float array): list of accuracy by epoch
+        - hyperparams (list): Infos regarding hyperparams
+            format: (epoch, hyperparams_dict)
     '''
-    prefix = date + '_' # a compléter
-
-    # load json and create model
-    json_file = open(directory + prefix + 'model.json', 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
+    prefix = date + '_'
+        
+    # load model from json
+    with open(directory + prefix + 'model.json', 'r') as f:
+        loaded_model_json = f.read()
+    
+    # Init model from json
     loaded_model = model_from_json(loaded_model_json)
 
     # load weights into new model
     loaded_model.load_weights(directory + prefix + "model_weights.h5")
     
-    # load model infos
-    infos_file = open(directory + prefix + 'model_infos.txt', 'r')
-    model_info_txt = infos_file.read()
-    infos_file.close()
-    print('model_info_txt:')
-    print(model_info_txt)
-
     print("Loaded model from disk: ")
     loaded_model.summary()
-    return (loaded_model, loaded_model_json)
+
+    # init dict of files to load:
+    pkl_to_load = {
+        'trainset_infos': 'pkl',
+        'trainset_utils': 'pkl',
+        'training_infos': 'pkl',
+        'history': 'pkl'
+    }
+    
+    # init dict of loaded files
+    loaded_files = {}
+    
+    for name, ext in pkl_to_load.items():
+        with open( directory + prefix + name + '.' + ext, "rb" ) as f:
+            loaded_files[name] = pickle.load(f)
+    
+    print("Loaded trainset_infos: ")
+    print('target group: {}, length of sequence: {}, number of chars: {}'.format(
+        loaded_trainset_infos['target_group'],
+        loaded_trainset_infos['length_of_sequence'],
+        loaded_trainset_infos['number_of_chars']
+    ))
+    print("Loaded training_infos: ")
+    print('total epochs: {}, loss: {}, acc: {}'.format(
+        loaded_training_infos['total_epochs'],
+        loaded_training_infos['loss'],
+        loaded_training_infos['acc']
+    ))
+    
+    return (loaded_model, loaded_files)
 
 
-# In[766]:
+# In[428]:
 
 
 # Model restore
-loaded_model, _ = load_model_from_disk(date='20180526-1703')
-generate_name(model=loaded_model, dict_size=number_of_chars, name_max_length=25, verbose=True)
+loaded_model, loaded_files_dict = load_model_from_disk(date='20180529-1637')
+print('\n## model fully loaded ! \n\n')
+
+print('\n## Plot training history :')
+plot_training_session(loaded_files_dict['trainset_infos'], loaded_files_dict['history'])
+
+print('\n## Generate sample name :')
+generate_name(
+    model=loaded_model,
+    trainset_infos=loaded_files_dict['trainset_infos'],
+    trainset_utils=loaded_files_dict['trainset_utils'],
+    name_max_length=25,
+    verbose=True
+)
 
